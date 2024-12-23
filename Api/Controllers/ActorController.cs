@@ -28,7 +28,7 @@ public class ActorController : ControllerBase
 
         _logger.LogInformation("Received request {@Request}", xmlBody);
 
-        var responseEnvelope = await GetEnvelope(new ActorResponse
+        var responseEnvelope = await GetPlainEnvelope(new ActorResponse
         {
             Id = Random.Shared.Next(0, 10000)
         }, "http://soap-api.com/actor");
@@ -74,6 +74,29 @@ public class ActorController : ControllerBase
             return BadRequest("signature is not valid");
         }
 
+        var namespaceManager = new XmlNamespaceManager(xmlDocument.NameTable);
+        namespaceManager.AddNamespace(SoapConstants.SoapPrefix, SoapConstants.SoapVersion1_1Namespace);
+        namespaceManager.AddNamespace(SoapConstants.WsuPrefix, SoapConstants.WsuNamespace);
+        namespaceManager.AddNamespace(SoapConstants.Wss1_0Prefix, SoapConstants.Wss10Namespace);
+        var timestampElement = xmlDocument.SelectSingleNode("soap:Envelope/soap:Header/wsse:Security/wsu:Timestamp", namespaceManager)!;
+
+        var createdElement = timestampElement.SelectSingleNode("wsu:Created", namespaceManager)!.InnerText;
+        var created = DateTime.Parse(createdElement).ToUniversalTime();
+
+        var expiresElement = timestampElement.SelectSingleNode("wsu:Expires", namespaceManager)!.InnerText;
+        var expires = DateTime.Parse(expiresElement).ToUniversalTime();
+        var now = DateTime.UtcNow;
+        if (created > now || expires < now)
+        {
+            var messageExpiredFault = new Soap11Fault<string>
+            {
+                FaultCode = SoapFaultCodeConstants.ClientFaultCode,
+                FaultString = "Message has expired"
+            };
+            var signedFaultEnvelope = await GetSignedEnvelope(messageExpiredFault);
+            return BadRequest(signedFaultEnvelope);
+        }
+
         var response = new ActorResponse
         {
             Id = Random.Shared.Next(0, 10000)
@@ -95,7 +118,7 @@ public class ActorController : ControllerBase
         return Ok(signedEnvelope);
     }
 
-    private static async Task<XmlDocument> GetEnvelope<TBody>(TBody body, string bodyNamespace) where TBody : class
+    private static async Task<XmlDocument> GetPlainEnvelope<TBody>(TBody body, string bodyNamespace) where TBody : class
     {
         using var stream = new MemoryStream();
         var encoding = new UTF8Encoding(false);
@@ -125,7 +148,7 @@ public class ActorController : ControllerBase
         return xmlDocument;
     }
 
-    private static async Task<XmlDocument> GetSignedEnvelope<TBody>(TBody body, string bodyNamespace) where TBody : class
+    private static async Task<XmlDocument> GetSignedEnvelope<TBody>(TBody body, string? bodyNamespace = null) where TBody : class
     {
         var privateCertificateBytes = await System.IO.File.ReadAllBytesAsync("oces3_private.p12");
         var publicCertificateBytes = await System.IO.File.ReadAllBytesAsync("oces3_public.cer");
@@ -133,7 +156,8 @@ public class ActorController : ControllerBase
         var privateCertificate = new X509Certificate2(privateCertificateBytes, "c5,PnmF8;m4I");
         var publicCertificate = new X509Certificate2(publicCertificateBytes);
 
-        var binarySecurityTokenId = Guid.NewGuid();
+        var timestampId = Guid.NewGuid().ToString();
+        var binarySecurityTokenId = Guid.NewGuid().ToString();
         var bodyId = Guid.NewGuid().ToString();
 
         using var stream = new MemoryStream();
@@ -145,15 +169,37 @@ public class ActorController : ControllerBase
             writer.WriteStartElement(SoapConstants.SoapPrefix, "Envelope", SoapConstants.SoapVersion1_1Namespace);
             writer.WriteAttributeString("xmlns", SoapConstants.Wss1_0Prefix, null, SoapConstants.Wss10Namespace);
             writer.WriteAttributeString("xmlns", SoapConstants.WsuPrefix, null, SoapConstants.WsuNamespace);
-            writer.WriteAttributeString("xmlns", "req", null, bodyNamespace);
+
+            if (bodyNamespace is not null)
+            {
+                writer.WriteAttributeString("xmlns", "request", null, bodyNamespace);
+            }
 
             writer.WriteStartElement(SoapConstants.SoapPrefix, "Header", null);
 
             writer.WriteStartElement(SoapConstants.Wss1_0Prefix, "Security", null);
             writer.WriteAttributeString(SoapConstants.SoapPrefix, "mustUnderstand", null, "1");
 
+            writer.WriteStartElement(SoapConstants.WsuPrefix, "Timestamp", null);
+            writer.WriteAttributeString(SoapConstants.WsuPrefix, "Id", null, timestampId);
+
+            writer.WriteStartElement(SoapConstants.WsuPrefix, "Created", null);
+            writer.WriteValue(DateTime.UtcNow);
+            
+            // End Created
+            writer.WriteEndElement();
+
+            writer.WriteStartElement(SoapConstants.WsuPrefix, "Expires", null);
+            writer.WriteValue(DateTime.UtcNow.AddSeconds(60));
+
+            // End Expires
+            writer.WriteEndElement();
+
+            // End Timestamp
+            writer.WriteEndElement();
+
             writer.WriteStartElement(SoapConstants.Wss1_0Prefix, "BinarySecurityToken", null);
-            writer.WriteAttributeString(SoapConstants.WsuPrefix, "Id", null, binarySecurityTokenId.ToString());
+            writer.WriteAttributeString(SoapConstants.WsuPrefix, "Id", null, binarySecurityTokenId);
 
             // https://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0.pdf
             writer.WriteAttributeString("ValueType", SoapConstants.CertificateValueType);
@@ -195,6 +241,20 @@ public class ActorController : ControllerBase
             SigningKey = privateCertificate.GetRSAPrivateKey()
         };
 
+        var timestampReference = new Reference
+        {
+            Uri = $"#{timestampId}"
+        };
+        timestampReference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
+        signedXml.AddReference(timestampReference);
+
+        var binarySecurityTokenReference = new Reference
+        {
+            Uri = $"#{binarySecurityTokenId}"
+        };
+        binarySecurityTokenReference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
+        signedXml.AddReference(binarySecurityTokenReference);
+
         var bodyReference = new Reference
         {
             Uri = $"#{bodyId}"
@@ -205,7 +265,7 @@ public class ActorController : ControllerBase
         var keyInfo = new KeyInfo();
         var securityTokenReference = signableXmlDocument.CreateElement(SoapConstants.Wss1_0Prefix, "SecurityTokenReference", SoapConstants.Wss10Namespace);
         var binaryTokenReference = signableXmlDocument.CreateElement(SoapConstants.Wss1_0Prefix, "Reference", SoapConstants.Wss10Namespace);
-        binaryTokenReference.SetAttribute("URI", $"#{binarySecurityTokenId.ToString()}");
+        binaryTokenReference.SetAttribute("URI", $"#{binarySecurityTokenId}");
         binaryTokenReference.SetAttribute("ValueType", SoapConstants.CertificateValueType);
         securityTokenReference.AppendChild(binaryTokenReference);
         keyInfo.AddClause(new KeyInfoNode(securityTokenReference));
