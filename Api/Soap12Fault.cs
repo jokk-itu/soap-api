@@ -2,6 +2,7 @@
 
 namespace Api;
 
+[XmlType(Namespace = SoapConstants.SoapVersion1_2Namespace, TypeName = "Fault")]
 public class Soap12Fault<TDetail>
 {
     [XmlElement(ElementName = "Code", IsNullable = false)]
