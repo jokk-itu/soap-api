@@ -22,13 +22,15 @@ public static class SoapConstants
 
     public const string SigNamespace = "http://www.w3.org/2000/09/xmldsig#";
     public const string EncNamespace = "http://www.w3.org/2001/04/xmlenc#";
-    public const string Wss10Namespace = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
-    public const string Wss11Namespace = "http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd";
+    public const string Wss1_0Namespace = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
+    public const string Wss1_1Namespace = "http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd";
     public const string WsuNamespace = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
 
     public const string CanonicalizationMethod = "http://www.w3.org/2001/10/xml-exc-c14n#";
     public const string Base64EncodingType = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary";
     public const string CertificateValueType = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3";
+    public const string EncryptedKeyTokenType = "http://docs.oasis-open.org/wss/oasis-wss-soap-message-security-1.1#EncryptedKey";
+    public const string ThumbprintValueType = "http://docs.oasis-open.org/wss/oasis-wss-soap-message-security-1.1#ThumbprintSHA1";
 
     /*
      * wsse:Security class (attributes: actor, role, mustUnderstand)
