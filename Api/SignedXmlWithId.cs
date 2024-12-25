@@ -9,11 +9,6 @@ public class SignedXmlWithId : SignedXml
     {
     }
 
-    public SignedXmlWithId(XmlElement xmlElement)
-        : base(xmlElement)
-    {
-    }
-
     public override XmlElement? GetIdElement(XmlDocument? doc, string id)
     {
         if (doc is null)
