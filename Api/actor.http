@@ -1,4 +1,5 @@
 @base=https://localhost:7044/api
+@timeout=600
 
 ### Invoke the anonoymous actor endpoint
 POST {{base}}/actor/anonymous
