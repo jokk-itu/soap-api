@@ -1,8 +1,9 @@
-﻿using System.Xml.Serialization;
+﻿using Api.Contracts;
+using System.Xml.Serialization;
 
 namespace Api;
 
-[XmlType(Namespace = SoapConstants.SoapVersion1_2Namespace, TypeName = "Fault")]
+[XmlRoot(Namespace = SoapConstants.SoapVersion1_2Namespace, ElementName = "Fault")]
 public class Soap12Fault<TDetail>
 {
     [XmlElement(ElementName = "Code", IsNullable = false)]

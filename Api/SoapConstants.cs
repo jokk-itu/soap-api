@@ -31,23 +31,4 @@ public static class SoapConstants
     public const string CertificateValueType = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3";
     public const string EncryptedKeyTokenType = "http://docs.oasis-open.org/wss/oasis-wss-soap-message-security-1.1#EncryptedKey";
     public const string ThumbprintValueType = "http://docs.oasis-open.org/wss/oasis-wss-soap-message-security-1.1#ThumbprintSHA1";
-
-    /*
-     * wsse:Security class (attributes: actor, role, mustUnderstand)
-     * * wsse:UsernameToken (attributes: wsu:Id)
-     * * * Username (required)
-     *
-     * * wsse:BinarySecurityToken (attributes: wsu:Id, ValueType, EncodingType)
-     *
-     * * wsse:SecurityTokenReference (attributes: wsu:Id, wsse11:TokenType, wsse:Usage)
-     * * * wsse:Reference (attributes: URI, ValueType)
-     * * * wsse:KeyIdentifier (attributes: wsu:Id, ValueType, EncodingType)
-     * * * wsse:Embedded (attributes: wsu:Id)
-     * * * * Generic argument
-     * * * ds:KeyInfo
-     * * * * wsse:KeyIdentifier
-     *
-     * * wsu:Timestamp (attributes: wsu:Id)
-     * * * wsu:Created and wsu:Expires
-     */
 }

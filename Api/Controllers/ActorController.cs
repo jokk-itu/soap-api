@@ -77,7 +77,7 @@ public class ActorController : ControllerBase
 
         if (!HasValidTimestamp(xmlDocument))
         {
-            var messageExpiredFault = new Soap11Fault<string>
+            var messageExpiredFault = new Soap11Fault
             {
                 FaultCode = SoapFaultCodeConstants.ClientFaultCode,
                 FaultString = "Message has expired"

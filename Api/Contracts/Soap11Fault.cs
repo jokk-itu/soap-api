@@ -1,9 +1,10 @@
-﻿using System.Xml.Serialization;
+﻿using System.Xml;
+using System.Xml.Serialization;
 
 namespace Api;
 
-[XmlType(Namespace = SoapConstants.SoapVersion1_1Namespace, TypeName = "Fault")]
-public class Soap11Fault<TDetail>
+[XmlRoot(Namespace = SoapConstants.SoapVersion1_1Namespace, ElementName = "Fault")]
+public class Soap11Fault
 {
     [XmlElement(ElementName = "faultcode", IsNullable = false)]
     public required string FaultCode { get; set; }
@@ -15,5 +16,5 @@ public class Soap11Fault<TDetail>
     public string? FaultActor { get; set; }
 
     [XmlElement(ElementName = "detail", IsNullable = true)]
-    public TDetail? Detail { get; set; }
+    public XmlElement? Detail { get; set; }
 }

@@ -1,0 +1,5 @@
+@base=https://localhost:7044/api
+@timeout=600
+
+### Invoke the anonoymous actor endpoint
+GET {{base}}/calculate/v1/add?a=2&b=3

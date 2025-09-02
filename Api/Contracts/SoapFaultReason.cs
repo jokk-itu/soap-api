@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Api;
+namespace Api.Contracts;
 
 public class SoapFaultReason
 {

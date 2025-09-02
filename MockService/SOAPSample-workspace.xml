@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-workspace name="SOAPSample" soapui-version="5.8.0" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  <con:project name="SOAPServices">C:/Workspace/soap-api/MockService/SOAPServices-soapui-project.xml</con:project>
+</con:soapui-workspace>

@@ -27,7 +27,7 @@ public class SignedXmlWithId : SignedXml
 
             idElem = doc.SelectSingleNode("//*[@wsu:Id=\"" + id + "\"]", nsManager) as XmlElement;
         }
-
+        
         return idElem;
     }
 }
