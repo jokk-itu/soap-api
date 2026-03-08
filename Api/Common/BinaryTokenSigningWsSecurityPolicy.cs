@@ -38,9 +38,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         wsSecurityOperations.Add(new WSSecurityOperation
         {
             WsuId = binarySecurityTokenId,
-            Element = binarySecurityToken,
-            SignElement = true,
-            EncryptElement = true
+            Element = binarySecurityToken
         });
         
         var binarySecurityTokenText = ownerDocument.CreateTextNode(Convert.ToBase64String(_clientCertificate.GetRawCertData()));
@@ -55,7 +53,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         signedXml.SignedInfo!.SignatureMethod = SignedXml.XmlDsigRSASHA256Url;
 
         var transform = new XmlDsigExcC14NTransform();
-        foreach (var wsSecurityOperation in wsSecurityOperations.Where(x => x.SignElement).OrderBy(x => x.WsuId))
+        foreach (var wsSecurityOperation in wsSecurityOperations)
         {
             var signableReference = new Reference
             {

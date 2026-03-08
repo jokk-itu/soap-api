@@ -32,7 +32,7 @@ public class EncryptedKeyWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseW
 
         AppendEncryptedKey(security, wsSecurityOperations, encryptionKey, encryptionKeyId);
 
-        foreach (var wsSecurityOperation in wsSecurityOperations.Where(x => x.EncryptElement))
+        foreach (var wsSecurityOperation in wsSecurityOperations)
         {
             var encryptedXml = new EncryptedXmlWithId();
             var encryptedElement = encryptedXml.EncryptData(wsSecurityOperation.Element, encryptionKey, false);
@@ -88,7 +88,7 @@ public class EncryptedKeyWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseW
             KeyInfo = encryptedKeyInfo
         };
 
-        foreach (var wsSecurityOperation in wsSecurityOperations.Where(x => x.EncryptElement))
+        foreach (var wsSecurityOperation in wsSecurityOperations)
         {
             encryptedKey.ReferenceList.Add($"#{wsSecurityOperation.WsuId}");
         }

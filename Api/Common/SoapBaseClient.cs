@@ -81,6 +81,7 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
     private string BuildSoapEnvelope(TRequest request)
     {
         var xmlDocument = new XmlDocument();
+
         var envelope = xmlDocument.CreateElement(SoapPrefix, "Envelope", SoapNamespace);
         envelope.SetAttribute($"xmlns:{SoapConstants.Wss1_0Prefix}", SoapConstants.Wss1_0Namespace);
         envelope.SetAttribute($"xmlns:{SoapConstants.WsuPrefix}", SoapConstants.WsuNamespace);
@@ -115,9 +116,7 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
         bodyWsSecurityOperations.Add(new WSSecurityOperation
         {
             WsuId = bodyId,
-            Element = body,
-            SignElement = true,
-            EncryptElement = true
+            Element = body
         });
 
         foreach (var postRequestWsSecurityPolicy in _requestWsSecurityPolicies)

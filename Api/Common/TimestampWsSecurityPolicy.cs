@@ -53,9 +53,7 @@ public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSe
         wsSecurityOperations.Add(new WSSecurityOperation
         {
             WsuId = timestampId,
-            Element = timestamp,
-            SignElement = _signTimestamp,
-            EncryptElement = _encryptTimestamp
+            Element = timestamp
         });
     }
 
