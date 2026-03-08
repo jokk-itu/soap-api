@@ -71,7 +71,6 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
         OnRequest(httpRequestMessage);
 
         var httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
-        httpResponseMessage.EnsureSuccessStatusCode();
 
         var responseContent = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
         using var bodyReader = new StreamReader(responseContent);
