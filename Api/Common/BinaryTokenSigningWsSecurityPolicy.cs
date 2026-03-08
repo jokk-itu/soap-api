@@ -25,12 +25,14 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         namespaceManager.AddNamespace("wsse", SoapConstants.Wss1_0Namespace);
         var security = (XmlElement)soapHeader.SelectSingleNode("wsse:Security", namespaceManager)!;
 
-        var binarySecurityTokenId = Guid.NewGuid().ToString();
-        var binarySecurityToken = soapHeader.OwnerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "BinarySecurityToken", SoapConstants.Wss1_0Prefix);
-        binarySecurityToken.SetAttribute("Id", SoapConstants.WsuNamespace, binarySecurityTokenId);
+        var binarySecurityTokenId = $"uuid-{Guid.NewGuid()}-1";
+        var binarySecurityToken = soapHeader.OwnerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "BinarySecurityToken", SoapConstants.Wss1_0Namespace);
+        var binarySecurityTokenIdNode = soapHeader.OwnerDocument.CreateAttribute(SoapConstants.WsuPrefix, "Id", SoapConstants.WsuNamespace);
+        binarySecurityTokenIdNode.Value = binarySecurityTokenId;
+        binarySecurityToken.SetAttributeNode(binarySecurityTokenIdNode);
+        binarySecurityToken.SetAttribute("ValueType", SoapConstants.CertificateValueType);
         // https://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0.pdf
         binarySecurityToken.SetAttribute("EncodingType", SoapConstants.Base64EncodingType);
-        binarySecurityToken.SetAttribute("ValueType", SoapConstants.CertificateValueType);
         security.AppendChild(binarySecurityToken);
 
         wsSecurityOperations.Add(new WSSecurityOperation
