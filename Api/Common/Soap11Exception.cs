@@ -28,6 +28,14 @@ public class Soap11Exception : Exception
 
         var xmlSerializer = new XmlSerializer(typeof(TDetail));
         using var stringReader = new StringReader(Detail.InnerXml);
-        return (TDetail?)xmlSerializer.Deserialize(stringReader);
+
+        try
+        {
+            return (TDetail?)xmlSerializer.Deserialize(stringReader);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 }
