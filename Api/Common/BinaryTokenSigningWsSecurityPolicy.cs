@@ -51,13 +51,18 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
             SigningKey = _clientCertificate.GetRSAPrivateKey()
         };
 
-        foreach (var wsSecurityOperation in wsSecurityOperations.Where(x => x.SignElement))
+        signedXml.SignedInfo!.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
+        signedXml.SignedInfo!.SignatureMethod = SignedXml.XmlDsigRSASHA256Url;
+
+        var transform = new XmlDsigExcC14NTransform();
+        foreach (var wsSecurityOperation in wsSecurityOperations.Where(x => x.SignElement).OrderBy(x => x.WsuId))
         {
             var signableReference = new Reference
             {
                 Uri = $"#{wsSecurityOperation.WsuId}"
             };
-            signableReference.AddTransform(new XmlDsigExcC14NTransform());
+            signableReference.AddTransform(transform);
+            signableReference.DigestMethod = SignedXml.XmlDsigSHA1Url;
             signedXml.AddReference(signableReference);
         }
 
