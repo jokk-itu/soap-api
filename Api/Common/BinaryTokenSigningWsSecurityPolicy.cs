@@ -101,7 +101,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         X509Certificate2 certificate;
         try
         {
-            certificate = new X509Certificate2(Convert.FromBase64String(binarySecurityToken.InnerText));
+            certificate = X509CertificateLoader.LoadCertificate(Convert.FromBase64String(binarySecurityToken.InnerText));
         }
         catch (CryptographicException)
         {
