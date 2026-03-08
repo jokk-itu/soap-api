@@ -76,46 +76,7 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
         var responseContent = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
         using var bodyReader = new StreamReader(responseContent);
         var xmlBody = await bodyReader.ReadToEndAsync(cancellationToken);
-
-        var xmlDocument = new XmlDocument
-        {
-            // Whitespaces must be preserved, to make sure signatures are kept valid
-            PreserveWhitespace = true
-        };
-        xmlDocument.LoadXml(xmlBody);
-
-        var namespaceManager = new XmlNamespaceManager(xmlDocument.NameTable);
-        namespaceManager.AddNamespace(SoapPrefix, SoapNamespace);
-        namespaceManager.AddNamespace(ResponsePrefix, RequestNamespace);
-        namespaceManager.AddNamespace(SoapConstants.Wss1_0Prefix, SoapConstants.Wss1_0Namespace);
-        namespaceManager.AddNamespace(SoapConstants.Wss1_1Prefix, SoapConstants.Wss1_1Namespace);
-        namespaceManager.AddNamespace(SoapConstants.WsuPrefix, SoapConstants.WsuNamespace);
-        namespaceManager.AddNamespace(SoapConstants.SigPrefix, SoapConstants.SigNamespace);
-        namespaceManager.AddNamespace(SoapConstants.EncPrefix, SoapConstants.EncNamespace);
-
-        if (xmlDocument.SelectSingleNode("soap:Envelope", namespaceManager) is not XmlElement envelope)
-        {
-            throw new UnknownSoapEnvelopeException(xmlDocument);
-        }
-
-        _soapFaultPolicy.Apply(envelope);
-
-        foreach (var responseWsSecurityPolicy in _responseWsSecurityPolicies)
-        {
-            var operationResult = responseWsSecurityPolicy.Apply(envelope);
-            if (!operationResult.IsValid)
-            {
-                throw new SecurityException();
-            }
-        }
-
-        var body = xmlDocument.SelectSingleNode("soap:Envelope/soap:Body", namespaceManager)!;
-
-        var xmlSerializer = new XmlSerializer(typeof(TResponse));
-        using var stringReader = new StringReader(body.InnerXml);
-        var response = (TResponse)xmlSerializer.Deserialize(stringReader)!;
-
-        return response;
+        return GetResponse(xmlBody);
     }
 
     private string BuildSoapEnvelope(TRequest request)
@@ -165,5 +126,47 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
         }
 
         return xmlDocument.InnerXml;
+    }
+
+    private TResponse GetResponse(string xmlBody)
+    {
+        var xmlDocument = new XmlDocument
+        {
+            // Whitespaces must be preserved, to make sure signatures are kept valid
+            PreserveWhitespace = true
+        };
+        xmlDocument.LoadXml(xmlBody);
+
+        var namespaceManager = new XmlNamespaceManager(xmlDocument.NameTable);
+        namespaceManager.AddNamespace(SoapPrefix, SoapNamespace);
+        namespaceManager.AddNamespace(ResponsePrefix, RequestNamespace);
+        namespaceManager.AddNamespace(SoapConstants.Wss1_0Prefix, SoapConstants.Wss1_0Namespace);
+        namespaceManager.AddNamespace(SoapConstants.Wss1_1Prefix, SoapConstants.Wss1_1Namespace);
+        namespaceManager.AddNamespace(SoapConstants.WsuPrefix, SoapConstants.WsuNamespace);
+        namespaceManager.AddNamespace(SoapConstants.SigPrefix, SoapConstants.SigNamespace);
+        namespaceManager.AddNamespace(SoapConstants.EncPrefix, SoapConstants.EncNamespace);
+
+        if (xmlDocument.SelectSingleNode("soap:Envelope", namespaceManager) is not XmlElement envelope)
+        {
+            throw new UnknownSoapEnvelopeException(xmlDocument);
+        }
+
+        _soapFaultPolicy.Apply(envelope);
+
+        foreach (var responseWsSecurityPolicy in _responseWsSecurityPolicies)
+        {
+            var operationResult = responseWsSecurityPolicy.Apply(envelope);
+            if (!operationResult.IsValid)
+            {
+                throw new SecurityException($"WSS validation for {responseWsSecurityPolicy.GetType().Name} failed");
+            }
+        }
+
+        var body = xmlDocument.SelectSingleNode("soap:Envelope/soap:Body", namespaceManager)!;
+
+        var xmlSerializer = new XmlSerializer(typeof(TResponse), defaultNamespace: RequestNamespace);
+        using var stringReader = new StringReader(body.InnerXml);
+        var response = (TResponse?)xmlSerializer.Deserialize(stringReader);
+        return response ?? throw new InvalidOperationException($"Cannot parse XML to {nameof(TResponse)}");
     }
 }
