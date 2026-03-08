@@ -96,13 +96,17 @@ public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSe
             };
         }
 
+        var clockSkew = TimeSpan.FromSeconds(15);
         var created = DateTime.Parse(createdElement.InnerXml).ToUniversalTime();
         var expires = DateTime.Parse(expiresElement.InnerXml).ToUniversalTime();
         var now = DateTime.UtcNow;
 
+        var isAfterCreated = now > created.Add(clockSkew) || now > created.Subtract(clockSkew);
+        var isBeforeExpires = now < expires.Add(clockSkew) || now < expires.Subtract(clockSkew);
+
         return new SoapOperationResult
         {
-            IsValid = created < now && expires > now
+            IsValid = isAfterCreated && isBeforeExpires
         };
     }
 }
