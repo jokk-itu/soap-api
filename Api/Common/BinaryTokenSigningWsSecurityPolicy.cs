@@ -43,7 +43,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
             EncryptElement = true
         });
         
-        var binarySecurityTokenText = ownerDocument.CreateTextNode(Convert.ToBase64String(_clientCertificate.GetPublicKey()));
+        var binarySecurityTokenText = ownerDocument.CreateTextNode(Convert.ToBase64String(_clientCertificate.GetRawCertData()));
         binarySecurityToken.AppendChild(binarySecurityTokenText);
 
         var signedXml = new SignedXmlWithId(ownerDocument)
