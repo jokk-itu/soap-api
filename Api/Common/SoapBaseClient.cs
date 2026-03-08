@@ -92,9 +92,11 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
 
         var headerSoapOperationResult = AddSoapHeaderElements(header);
 
-        var bodyId = Guid.NewGuid().ToString();
+        var bodyId = $"uuid-{Guid.NewGuid()}-1";
         var body = xmlDocument.CreateElement(SoapPrefix, "Body", SoapNamespace);
-        body.SetAttribute("Id", SoapConstants.WsuNamespace, bodyId);
+        var bodyIdNode = xmlDocument.CreateAttribute(SoapConstants.WsuPrefix, "Id", SoapConstants.WsuNamespace);
+        bodyIdNode.Value = bodyId;
+        body.SetAttributeNode(bodyIdNode);
 
         // the body must be appended to the envelope before navigation can occur
         envelope.AppendChild(body);
