@@ -34,7 +34,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         // https://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0.pdf
         binarySecurityToken.SetAttribute("EncodingType", SoapConstants.Base64EncodingType);
         security.AppendChild(binarySecurityToken);
-
+        
         wsSecurityOperations.Add(new WSSecurityOperation
         {
             WsuId = binarySecurityTokenId,
@@ -70,8 +70,8 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         var securityTokenReference = ownerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "SecurityTokenReference", SoapConstants.Wss1_0Namespace);
 
         var reference = ownerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "Reference", SoapConstants.Wss1_0Namespace);
-        reference.SetAttribute("URI", $"#{binarySecurityTokenId}");
         reference.SetAttribute("ValueType", SoapConstants.CertificateValueType);
+        reference.SetAttribute("URI", $"#{binarySecurityTokenId}");
         securityTokenReference.AppendChild(reference);
         var keyInfo = new KeyInfo();
         keyInfo.AddClause(new KeyInfoNode(securityTokenReference));
@@ -103,7 +103,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         {
             certificate = new X509Certificate2(Convert.FromBase64String(binarySecurityToken.InnerText));
         }
-        catch (CryptographicException exception)
+        catch (CryptographicException)
         {
             return new SoapOperationResult
             {
