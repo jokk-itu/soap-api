@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Globalization;
+using System.Xml;
 
 namespace Api.Common;
 
@@ -28,18 +29,24 @@ public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSe
         namespaceManager.AddNamespace("wsse", SoapConstants.Wss1_0Namespace);
         var security = (XmlElement)soapHeader.SelectSingleNode("wsse:Security", namespaceManager)!;
 
-        var timestampId = Guid.NewGuid().ToString();
+        var timestampId = $"uuid-{Guid.NewGuid()}-1";
         var timestamp = soapHeader.OwnerDocument.CreateElement(SoapConstants.WsuPrefix, "Timestamp", SoapConstants.WsuNamespace);
-        timestamp.SetAttribute("Id", SoapConstants.WsuNamespace, timestampId);
+        var timeStampNodeId = soapHeader.OwnerDocument.CreateAttribute(SoapConstants.WsuPrefix, "Id", SoapConstants.WsuNamespace);
+        timeStampNodeId.Value = timestampId;
+        timestamp.SetAttributeNode(timeStampNodeId);
         security.AppendChild(timestamp);
 
+        var now = DateTime.UtcNow;
+
         var created = soapHeader.OwnerDocument.CreateElement(SoapConstants.WsuPrefix, "Created", SoapConstants.WsuNamespace);
-        var createdText = soapHeader.OwnerDocument.CreateTextNode(DateTime.UtcNow.ToString("O"));
+        var createdAt = now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+        var createdText = soapHeader.OwnerDocument.CreateTextNode(createdAt);
         created.AppendChild(createdText);
         timestamp.AppendChild(created);
 
         var expires = soapHeader.OwnerDocument.CreateElement(SoapConstants.WsuPrefix, "Expires", SoapConstants.WsuNamespace);
-        var expiresText = soapHeader.OwnerDocument.CreateTextNode(DateTime.UtcNow.AddSeconds(_expirationSeconds).ToString("O"));
+        var expiresAt = now.AddSeconds(_expirationSeconds).ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+        var expiresText = soapHeader.OwnerDocument.CreateTextNode(expiresAt);
         expires.AppendChild(expiresText);
         timestamp.AppendChild(expires);
 
