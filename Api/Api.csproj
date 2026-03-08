@@ -5,7 +5,14 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+	  <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
+	  <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Update="oces3_private.p12" CopyToOutputDirectory="Always" />
 		<None Update="oces3_public.cer" CopyToOutputDirectory="Always" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="Api.dll.config" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>

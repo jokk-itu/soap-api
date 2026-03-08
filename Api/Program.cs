@@ -1,9 +1,13 @@
 using Api;
 using Api.Common;
 using Api.Contracts;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
+
+TraceConfiguration.Register();
+
 builder.Services
     .AddControllers()
     .AddXmlSerializerFormatters();
