@@ -6,21 +6,18 @@ namespace Api.Common;
 public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSecurityPolicy
 {
     private readonly int _expirationSeconds;
-    private readonly bool _signTimestamp;
-    private readonly bool _encryptTimestamp;
+    private readonly int _clockSkewSeconds;
 
     public TimestampWsSecurityPolicy(
         int expirationSeconds,
-        bool signTimestamp,
-        bool encryptTimestamp)
+        int clockSkewSeconds)
     {
         _expirationSeconds = expirationSeconds;
-        _signTimestamp = signTimestamp;
-        _encryptTimestamp = encryptTimestamp;
+        _clockSkewSeconds = clockSkewSeconds;
     }
 
     public TimestampWsSecurityPolicy()
-        : this(60, true, true)
+        : this(60, 10)
     {}
 
     public void Apply(XmlElement soapHeader, ICollection<WSSecurityOperation> wsSecurityOperations)
@@ -90,7 +87,7 @@ public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSe
             };
         }
 
-        var clockSkew = TimeSpan.FromSeconds(15);
+        var clockSkew = TimeSpan.FromSeconds(_clockSkewSeconds);
         var created = DateTime.Parse(createdElement.InnerXml).ToUniversalTime();
         var expires = DateTime.Parse(expiresElement.InnerXml).ToUniversalTime();
         var now = DateTime.UtcNow;
