@@ -103,7 +103,7 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
 
         using (var xmlWriter = body.CreateNavigator()!.AppendChild())
         {
-            // write an empty whitespace to force omit the Xml declaration
+            // write an empty whitespace to force omit the default XML declaration
             xmlWriter.WriteWhitespace("");
 
             var xmlSerializer = new XmlSerializer(typeof(TRequest), defaultNamespace: RequestNamespace);
