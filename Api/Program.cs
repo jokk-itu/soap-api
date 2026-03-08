@@ -30,14 +30,15 @@ builder.Services.AddScoped<ISoapClient<CalculateAddRequest, CalculateAddResponse
 
     var requestWsSecurityPolicies = new List<IRequestWsSecurityPolicy>
     {
-        new TimestampWsSecurityPolicy(soap11AttributeGenerator),
-        new BinaryTokenSigningWsSecurityPolicy(soap11AttributeGenerator, privateCertificate, publicCertificate)
+        new SecurityHeaderWsSecurityPolicy(soap11AttributeGenerator),
+        new TimestampWsSecurityPolicy(),
+        new BinaryTokenSigningWsSecurityPolicy(privateCertificate, publicCertificate)
     };
 
     var responseWsSecurityPolicies = new List<IResponseWsSecurityPolicy>
     {
-        new TimestampWsSecurityPolicy(soap11AttributeGenerator),
-        new BinaryTokenSigningWsSecurityPolicy(soap11AttributeGenerator, privateCertificate, publicCertificate)
+        new TimestampWsSecurityPolicy(),
+        new BinaryTokenSigningWsSecurityPolicy(privateCertificate, publicCertificate)
     };
 
     return new CalculateAddSoapClient(

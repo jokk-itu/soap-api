@@ -7,16 +7,13 @@ namespace Api.Common;
 
 public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSecurityPolicy
 {
-    private readonly ISoapAttributeGenerator _soapAttributeGenerator;
     private readonly X509Certificate2 _clientCertificate;
     private readonly X509Certificate2 _serviceCertificate;
 
     public BinaryTokenSigningWsSecurityPolicy(
-        ISoapAttributeGenerator soapAttributeGenerator,
         X509Certificate2 clientCertificate,
         X509Certificate2 serviceCertificate)
     {
-        _soapAttributeGenerator = soapAttributeGenerator;
         _clientCertificate = clientCertificate;
         _serviceCertificate = serviceCertificate;
     }
@@ -26,15 +23,7 @@ public class BinaryTokenSigningWsSecurityPolicy : IRequestWsSecurityPolicy, IRes
         var ownerDocument = soapHeader.OwnerDocument;
         var namespaceManager = new XmlNamespaceManager(ownerDocument.NameTable);
         namespaceManager.AddNamespace("wsse", SoapConstants.Wss1_0Namespace);
-        var security = (XmlElement?)soapHeader.SelectSingleNode("wsse:Security", namespaceManager);
-
-        if (security is null)
-        {
-            var newSecurityElement = ownerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "Security", SoapConstants.Wss1_0Namespace);
-            _soapAttributeGenerator.GenerateMustUnderstandAttribute(newSecurityElement, true);
-            soapHeader.AppendChild(newSecurityElement);
-            security = newSecurityElement;
-        }
+        var security = (XmlElement)soapHeader.SelectSingleNode("wsse:Security", namespaceManager)!;
 
         var binarySecurityTokenId = Guid.NewGuid().ToString();
         var binarySecurityToken = soapHeader.OwnerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "BinarySecurityToken", SoapConstants.Wss1_0Prefix);

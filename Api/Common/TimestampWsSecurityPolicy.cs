@@ -4,40 +4,29 @@ namespace Api.Common;
 
 public class TimestampWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSecurityPolicy
 {
-    private readonly ISoapAttributeGenerator _soapAttributeGenerator;
     private readonly int _expirationSeconds;
     private readonly bool _signTimestamp;
     private readonly bool _encryptTimestamp;
 
     public TimestampWsSecurityPolicy(
-        ISoapAttributeGenerator soapAttributeGenerator,
         int expirationSeconds,
         bool signTimestamp,
         bool encryptTimestamp)
     {
-        _soapAttributeGenerator = soapAttributeGenerator;
         _expirationSeconds = expirationSeconds;
         _signTimestamp = signTimestamp;
         _encryptTimestamp = encryptTimestamp;
     }
 
-    public TimestampWsSecurityPolicy(ISoapAttributeGenerator soapAttributeGenerator)
-        : this(soapAttributeGenerator, 60, true, true)
+    public TimestampWsSecurityPolicy()
+        : this(60, true, true)
     {}
 
     public void Apply(XmlElement soapHeader, ICollection<WSSecurityOperation> wsSecurityOperations)
     {
         var namespaceManager = new XmlNamespaceManager(soapHeader.OwnerDocument.NameTable);
         namespaceManager.AddNamespace("wsse", SoapConstants.Wss1_0Namespace);
-        var security = (XmlElement?)soapHeader.SelectSingleNode("wsse:Security", namespaceManager);
-
-        if (security is null)
-        {
-            var newSecurityElement = soapHeader.OwnerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "Security", SoapConstants.Wss1_0Namespace);
-            _soapAttributeGenerator.GenerateMustUnderstandAttribute(newSecurityElement, true);
-            soapHeader.AppendChild(newSecurityElement);
-            security = newSecurityElement;
-        }
+        var security = (XmlElement)soapHeader.SelectSingleNode("wsse:Security", namespaceManager)!;
 
         var timestampId = Guid.NewGuid().ToString();
         var timestamp = soapHeader.OwnerDocument.CreateElement(SoapConstants.WsuPrefix, "Timestamp", SoapConstants.WsuNamespace);

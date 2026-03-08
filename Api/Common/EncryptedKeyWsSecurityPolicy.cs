@@ -8,16 +8,13 @@ namespace Api.Common;
 
 public class EncryptedKeyWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseWsSecurityPolicy
 {
-    private readonly ISoapAttributeGenerator _soapAttributeGenerator;
     private readonly string _soapNamespace;
     private readonly X509Certificate2 _certificate;
 
     public EncryptedKeyWsSecurityPolicy(
-        ISoapAttributeGenerator soapAttributeGenerator,
         string soapNamespace,
         X509Certificate2 certificate)
     {
-        _soapAttributeGenerator = soapAttributeGenerator;
         _soapNamespace = soapNamespace;
         _certificate = certificate;
     }
@@ -28,15 +25,7 @@ public class EncryptedKeyWsSecurityPolicy : IRequestWsSecurityPolicy, IResponseW
         var namespaceManager = new XmlNamespaceManager(ownerDocument.NameTable);
         namespaceManager.AddNamespace("wsse", SoapConstants.Wss1_0Namespace);
         namespaceManager.AddNamespace("soap", _soapNamespace);
-        var security = (XmlElement?)soapHeader.SelectSingleNode("wsse:Security", namespaceManager);
-
-        if (security is null)
-        {
-            var newSecurityElement = ownerDocument.CreateElement(SoapConstants.Wss1_0Prefix, "Security", SoapConstants.Wss1_0Namespace);
-            _soapAttributeGenerator.GenerateMustUnderstandAttribute(newSecurityElement, true);
-            soapHeader.AppendChild(newSecurityElement);
-            security = newSecurityElement;
-        }
+        var security = (XmlElement)soapHeader.SelectSingleNode("wsse:Security", namespaceManager)!;
 
         var encryptionKey = Aes.Create();
         var encryptionKeyId = Guid.NewGuid().ToString();
