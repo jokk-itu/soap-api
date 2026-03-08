@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using System.Xml.Serialization;
+using Api.Contracts;
 
 namespace Api.Common;
 

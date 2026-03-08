@@ -4,6 +4,7 @@ using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Api.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

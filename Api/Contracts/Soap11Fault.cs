@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using System.Xml.Serialization;
 
-namespace Api;
+namespace Api.Contracts;
 
 [XmlRoot(Namespace = SoapConstants.SoapVersion1_1Namespace, ElementName = "Fault")]
 public class Soap11Fault
