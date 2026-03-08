@@ -125,7 +125,7 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
             postRequestWsSecurityPolicy.Apply(header, bodyWsSecurityOperations);
         }
 
-        return xmlDocument.InnerXml;
+        return xmlDocument.OuterXml;
     }
 
     private TResponse GetResponse(string xmlBody)
