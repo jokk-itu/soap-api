@@ -83,7 +83,6 @@ public abstract class SoapBaseClient<TRequest, TResponse> : ISoapClient<TRequest
         var xmlDocument = new XmlDocument();
         var envelope = xmlDocument.CreateElement(SoapPrefix, "Envelope", SoapNamespace);
         envelope.SetAttribute($"xmlns:{SoapConstants.Wss1_0Prefix}", SoapConstants.Wss1_0Namespace);
-        envelope.SetAttribute($"xmlns:{SoapConstants.Wss1_1Prefix}", SoapConstants.Wss1_1Namespace);
         envelope.SetAttribute($"xmlns:{SoapConstants.WsuPrefix}", SoapConstants.WsuNamespace);
         envelope.SetAttribute($"xmlns:{RequestPrefix}", RequestNamespace);
         xmlDocument.AppendChild(envelope);
